@@ -24,12 +24,12 @@
 #  && chmod -R "g+rwX" /deployments \
 #  && chown -R 1001:root /deployments
 
-FROM fedora:32
+FROM fedora:33
 
 RUN mkdir /tmp/jdk \
      && cd /tmp/jdk \
-     && curl -O https://download.java.net/java/GA/jdk15/779bf45e88a44cbd9ea6621d33e33db1/36/GPL/openjdk-15_linux-x64_bin.tar.gz \
-     && tar -xvf openjdk-15_linux-x64_bin.tar.gz
+     && curl -O https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz \
+     && tar -xvf openjdk-15.0.2_linux-x64_bin.tar.gz
 
 COPY target/lib/* /deployments/lib/
 COPY target/*-runner.jar /deployments/app.jar

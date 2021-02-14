@@ -1,3 +1,4 @@
+package dev.morling.jfrunit.playground;
 //package dev.morling.demos.quarkus;
 //
 //import javax.json.bind.annotation.JsonbTransient;

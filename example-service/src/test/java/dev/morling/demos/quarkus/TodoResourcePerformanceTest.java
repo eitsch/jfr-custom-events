@@ -91,6 +91,7 @@ public class TodoResourcePerformanceTest {
     @Order(2)
     @EnableEvent("jdk.ObjectAllocationInNewTLAB")
     @EnableEvent("jdk.ObjectAllocationOutsideTLAB")
+    @EnableEvent("jdk.ObjectAllocationSample")
 //    @EnableConfiguration("profile")
     public void retrieveTodoProfile() throws Exception {
         Random r = new Random();
@@ -99,7 +100,7 @@ public class TodoResourcePerformanceTest {
                 .build();
 
         // warm-up
-        for (int i = 1; i<= 20_000; i++) {
+        for (int i = 1; i<= 20_00; i++) {
             if (i % 1000 == 0) {
                 System.out.println(i);
             }
@@ -109,7 +110,7 @@ public class TodoResourcePerformanceTest {
         jfrEvents.awaitEvents();
         jfrEvents.reset();
 
-        for (int i = 1; i<= 10_000; i++) {
+        for (int i = 1; i<= 10_00; i++) {
             if (i % 1000 == 0) {
                 System.out.println(i);
             }
@@ -123,7 +124,15 @@ public class TodoResourcePerformanceTest {
                 .mapToLong(this::getAllocationSize)
                 .sum();
 
-        assertThat(sum / 10_000).isLessThan(33_000);
+        long sumSample = jfrEvents.filter(this::isObjectSampleEvent)
+                .filter(this::isRelevantThread)
+                .mapToLong(this::getAllocationSize)
+                .sum();
+        
+        System.out.println("sum: " + sum);
+        System.out.println("sum sample: " + sumSample);
+        
+//        assertThat(sumSample / 10_000).isLessThan(33_000);
     }
 
     private void executeRequest(long id, HttpClient client) throws URISyntaxException, IOException, InterruptedException {
@@ -140,7 +149,9 @@ public class TodoResourcePerformanceTest {
     }
 
     private long getAllocationSize(RecordedEvent re) {
-        return re.getEventType().getName().equals("jdk.ObjectAllocationInNewTLAB") ? re.getLong("tlabSize") : re.getLong("allocationSize");
+        return re.getEventType().getName().equals("jdk.ObjectAllocationInNewTLAB") ? re.getLong("tlabSize") :
+        		re.getEventType().getName().equals("jdk.ObjectAllocationSample") ? re.getLong("weight") :
+        		re.getLong("allocationSize");
     }
 
     private boolean isObjectAllocationEvent(RecordedEvent re) {
@@ -148,6 +159,10 @@ public class TodoResourcePerformanceTest {
                 re.getEventType().getName().equals("jdk.ObjectAllocationOutsideTLAB");
     }
 
+    private boolean isObjectSampleEvent(RecordedEvent re) {
+        return re.getEventType().getName().equals("jdk.ObjectAllocationSample");
+    }
+    
     private boolean isRelevantThread(RecordedEvent re) {
         return re.getThread().getJavaName().startsWith("vert.x-eventloop") ||
                 re.getThread().getJavaName().startsWith("executor-thread");

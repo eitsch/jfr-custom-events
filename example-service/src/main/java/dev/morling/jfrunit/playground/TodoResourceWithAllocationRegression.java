@@ -1,4 +1,4 @@
-package dev.morling.demos.quarkus;
+package dev.morling.jfrunit.playground;
 
 import java.net.URI;
 import java.util.List;
@@ -19,8 +19,8 @@ import javax.ws.rs.core.Response;
 import io.quarkus.panache.common.Sort;
 import io.quarkus.panache.common.Sort.Direction;
 
-@Path("/todo")
-public class TodoResource {
+@Path("/todo2")
+public class TodoResourceWithAllocationRegression {
 
     @Inject
     EntityManager em;
@@ -50,17 +50,6 @@ public class TodoResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Response addTodo(Todo todo) {
-
-//        TodoDetail detail = new TodoDetail();
-//        detail.todo = todo;
-//        detail.title = "Detail 1";
-//        todo.details.add(detail);
-//
-//        detail = new TodoDetail();
-//        detail.todo = todo;
-//        detail.title = "Detail 2";
-//        todo.details.add(detail);
-
         todo.persist();
 
         return Response.created(URI.create("/todo/" + todo.id))
@@ -87,8 +76,8 @@ public class TodoResource {
         // Query query = em.createNativeQuery("SELECT title FROM todo.Todo, pg_sleep(1) WHERE id = ?");
 //         Object res = query.getSingleResult();
 //        query.setParameter(1, id);
-        Todo res = Todo.findById(id);
-
+        Todo res = Todo.find("SELECT t FROM todo WHERE id = :1", id).singleResult();
+        System.out.println(res);
 
 //        User user = RestAssured
 //            .given()

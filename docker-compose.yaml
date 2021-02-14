@@ -3,7 +3,7 @@ version: '3.5'
 services:
 
   todo-db:
-    image: postgres:11
+    image: postgres:13
     ports:
      - 5432:5432
     environment:
@@ -53,34 +53,6 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - my-network
-
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - 3000:3000
-    links:
-      - prometheus
-      - jfr-data-source
-    volumes:
-      - ./grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
-      - ./grafana-all-dashboards.yml:/etc/grafana/provisioning/dashboards/all.yml
-      - ./grafana-todo-dashboard.json:/var/lib/grafana/dashboards/grafana-todo-dashboard.json
-      - ./jfr-datasource/dashboards/dashboard.json:/var/lib/grafana/dashboards/grafana-jfr-dashboard.json
-    environment:
-      GF_INSTALL_PLUGINS: grafana-simple-json-datasource
-    networks:
-      - my-network
-
-  jfr-data-source:
-    image: dev.morling/jfr-data-source:1.0
-    build:
-      context: jfr-datasource/
-      dockerfile: docker/Dockerfile.jvm
-    ports:
-      - 8081:8080
-    networks:
-      - my-network
-
 networks:
   my-network:
     name: flight-recorder-network

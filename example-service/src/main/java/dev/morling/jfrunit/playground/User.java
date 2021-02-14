@@ -1,4 +1,4 @@
-package dev.morling.demos.quarkus;
+package dev.morling.jfrunit.playground;
 
 public class User {
     public long id;
